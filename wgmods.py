@@ -122,7 +122,7 @@ class Site(object):
 
     def __init__(self, headless=True):
         from playwright.sync_api import sync_playwright
-        PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+        PROFILE_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
         self._playwright = sync_playwright().start()
         try:
             self._context = self._playwright.chromium.launch_persistent_context(
@@ -187,7 +187,7 @@ def cmd_login(args):
     chrome = shutil.which(args.chrome)
     if chrome is None:
         raise CliError('Chrome not found as %r. Pass its path with --chrome.' % args.chrome)
-    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    PROFILE_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
     print('Sign in to wgmods.net in the Chrome window that opened, then close that window.')
     subprocess.run(chrome_login_command(chrome), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     with Site() as site:
