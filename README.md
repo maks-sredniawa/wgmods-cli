@@ -26,7 +26,7 @@ wgmods upload 8085 dist/maksforge.autoloader_timer_0.2.0.wotmod \
 
 `upload` adds the file as a new version and sends it to moderation, as the site's *Add update* form does. It defaults to the newest game version; pick another with `--game-version`. `--comment` is a note for the moderators, `--hidden` uploads the version without showing it, and `--dry-run` checks the sign-in, the mod, the version and the game version without uploading anything.
 
-It refuses a version number the mod already has, and refuses while the mod is in review (state *in review* or *published, update in review*), because the site won't let you edit a mod then either. `--force` tries anyway.
+It refuses a version number the mod already has, and refuses while the mod is in review (state *in review* or *published, update in review*), because the site won't open its edit page then. `--force` uploads anyway: the API accepts it and the new version waits in review beside the old one (tried 2026-11-01). Whether that moves the mod back in the moderation queue is unknown.
 
 ## How it works
 
