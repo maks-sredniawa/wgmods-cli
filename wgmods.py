@@ -9,14 +9,14 @@ import argparse
 import base64
 import json
 import os
+import shutil
+import subprocess
 import sys
-import time
 from pathlib import Path
 
 SITE = 'https://wgmods.net'
 MODDER_SECTION = SITE + '/modder-section/'
 PROFILE_DIR = Path(os.environ.get('WGMODS_PROFILE', Path.home() / '.local/share/wgmods-cli/profile'))
-LOGIN_TIMEOUT_SECONDS = 600
 
 MOD_STATES = {
     -1: 'default', 0: 'draft', 1: 'in review', 2: 'rejected', 3: 'published',
@@ -132,9 +132,6 @@ class Site(object):
             raise
         self.page = self._context.pages[0] if self._context.pages else self._context.new_page()
 
-    def new_background_page(self):
-        return self._context.new_page()
-
     def close(self):
         self._context.close()
         self._playwright.stop()
@@ -177,24 +174,24 @@ class Site(object):
         return mods
 
 
-def cmd_login(_args):
-    with Site(headless=False) as site:
-        sign_in_page = site.page
-        sign_in_page.goto(SITE + '/')
-        site.page = site.new_background_page()
-        sign_in_page.bring_to_front()
-        print('Sign in to wgmods.net in the Chrome window that opened. It closes by itself once you are in.')
-        deadline = time.time() + LOGIN_TIMEOUT_SECONDS
-        while time.time() < deadline:
-            try:
-                site.open_modder_section()
-                mods = site.owner_mods()
-            except Exception:
-                sign_in_page.wait_for_timeout(3000)
-                continue
-            print('Signed in. %d mod(s) on this account.' % len(mods))
-            return
-        raise CliError('Gave up waiting for the sign-in after %d s.' % LOGIN_TIMEOUT_SECONDS)
+def chrome_login_command(chrome):
+    # Google refuses sign-in in a browser Playwright controls, so the sign-in runs in plain Chrome.
+    # --password-store=basic matches Playwright's launch, or the headless runs can't decrypt the cookies.
+    return [chrome, '--user-data-dir=%s' % PROFILE_DIR, '--password-store=basic',
+            '--no-first-run', '--no-default-browser-check', '--new-window', SITE + '/']
+
+
+def cmd_login(args):
+    chrome = shutil.which(args.chrome)
+    if chrome is None:
+        raise CliError('Chrome not found as %r. Pass its path with --chrome.' % args.chrome)
+    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    print('Sign in to wgmods.net in the Chrome window that opened, then close that window.')
+    subprocess.run(chrome_login_command(chrome), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    with Site() as site:
+        site.open_modder_section()
+        mods = site.owner_mods()
+    print('Signed in. %d mod(s) on this account.' % len(mods))
 
 
 def cmd_mods(args):
@@ -249,7 +246,8 @@ def cmd_upload(args):
 def parser():
     root = argparse.ArgumentParser(prog='wgmods', description=__doc__)
     commands = root.add_subparsers(dest='command', required=True)
-    commands.add_parser('login', help='sign in once in a Chrome window; the session is kept for later runs')
+    login = commands.add_parser('login', help='sign in once in a Chrome window; the session is kept for later runs')
+    login.add_argument('--chrome', default='google-chrome', help='Chrome executable (default: google-chrome)')
     mods = commands.add_parser('mods', help='list your mods, their ids, states and versions')
     mods.add_argument('--json', action='store_true', help='print the raw API response')
     commands.add_parser('game-versions', help='list the game versions the site accepts')

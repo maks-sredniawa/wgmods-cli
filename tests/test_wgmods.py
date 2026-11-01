@@ -71,6 +71,13 @@ class WgmodsTest(unittest.TestCase):
             os.unlink(f.name)
         self.assertEqual(wgmods.read_text_option('inline', None), 'inline')
 
+    def test_sign_in_runs_in_plain_chrome_with_the_tools_profile(self):
+        command = wgmods.chrome_login_command('/usr/bin/google-chrome')
+        self.assertEqual(command[0], '/usr/bin/google-chrome')
+        self.assertIn('--user-data-dir=%s' % wgmods.PROFILE_DIR, command)
+        self.assertIn('--password-store=basic', command)
+        self.assertFalse(any('automation' in part or 'remote-debugging' in part for part in command))
+
     def test_dry_run_and_force_are_flags_on_upload(self):
         args = wgmods.parser().parse_args(['upload', '8085', 'x.wotmod', '--version', '0.2.0', '--dry-run'])
         self.assertTrue(args.dry_run)

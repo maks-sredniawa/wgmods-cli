@@ -2,7 +2,7 @@
 
 Uploads a new version of one of your mods to the World of Tanks Mod Hub, [wgmods.net](https://wgmods.net), from the command line.
 
-The Mod Hub has no public upload API, so this drives the same private JSON API the site's own pages use. It runs inside your installed Google Chrome, through Playwright, with a profile of its own (`~/.local/share/wgmods-cli/profile`). You sign in once in a visible window; later runs reuse that session headless. It never touches your normal Chrome profile.
+The Mod Hub has no public upload API, so this drives the same private JSON API the site's own pages use. It runs inside your installed Google Chrome, through Playwright, with a profile of its own (`~/.local/share/wgmods-cli/profile`). You sign in once in an ordinary Chrome window; later runs reuse that session headless. It never touches your normal Chrome profile.
 
 ## Setup
 
@@ -13,7 +13,7 @@ ln -s "$PWD/wgmods.py" ~/.local/bin/wgmods
 wgmods login
 ```
 
-`login` opens Chrome on wgmods.net. Sign in with your Wargaming account; the window closes by itself once the site lets you in. Run it again whenever a command says you're not signed in.
+`login` opens a plain Chrome window on wgmods.net with the tool's profile. Sign in (Wargaming account, or Google through it), then close the window; `login` then checks the session and prints how many mods the account has. The sign-in can't run in the Playwright-controlled window because Google refuses sign-in from automated browsers. Run `login` again whenever a command says you're not signed in.
 
 ## Use
 
