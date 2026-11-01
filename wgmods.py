@@ -127,8 +127,10 @@ class Site(object):
         try:
             self._context = self._playwright.chromium.launch_persistent_context(
                 str(PROFILE_DIR), channel='chrome', headless=headless)
-        except Exception:
+        except Exception as error:
             self._playwright.stop()
+            if 'ProcessSingleton' in str(error):
+                raise CliError('The wgmods Chrome profile is in use. Close the sign-in window and try again.')
             raise
         self.page = self._context.pages[0] if self._context.pages else self._context.new_page()
 
