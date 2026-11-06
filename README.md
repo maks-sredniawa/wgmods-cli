@@ -11,7 +11,7 @@ The Mod Hub has no public upload API, so this drives the same private JSON API t
 Needs [uv](https://docs.astral.sh/uv/) and Google Chrome. Tried on Linux; elsewhere, point `wgmods login --chrome` at your Chrome. uv fetches Playwright on the first run; no browser download is needed.
 
 ```sh
-git clone https://github.com/maksforge/wgmods-cli.git
+git clone https://github.com/maks-sredniawa/wgmods-cli.git
 ln -s "$PWD/wgmods-cli/wgmods.py" ~/.local/bin/wgmods
 wgmods login
 ```
